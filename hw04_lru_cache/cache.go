@@ -63,6 +63,9 @@ func (l *lruCache) Get(key Key) (interface{}, bool) {
 }
 
 func (l *lruCache) Clear() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	l.items = make(map[Key]*ListItem, l.capacity)
 	l.queue = NewList()
 }
