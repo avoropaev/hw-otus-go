@@ -15,6 +15,53 @@ import (
 func TestRun(t *testing.T) {
 	defer goleak.VerifyNone(t)
 
+	t.Run("unlimited errors", func(t *testing.T) {
+		tasks := make([]Task, 0, 1)
+		var runTasksCount int32
+
+		wantError := fmt.Errorf("error from task")
+		tasks = append(tasks, func() error {
+			atomic.AddInt32(&runTasksCount, 1)
+			return wantError
+		})
+
+		workersCount := 5
+		maxErrorsCount := 0
+		err := Run(tasks, workersCount, maxErrorsCount)
+
+		require.Nil(t, err)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
+
+		workersCount = 5
+		maxErrorsCount = -1
+		err = Run(tasks, workersCount, maxErrorsCount)
+
+		require.Nil(t, err)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+0), "extra tasks were started")
+	})
+
+	t.Run("tasks without errors", func(t *testing.T) {
+		tasksCount := 50
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		err := Run(tasks, 10, 0)
+
+		require.Eventually(t, func() bool {
+			return runTasksCount == int32(tasksCount)
+		}, time.Millisecond/2, time.Millisecond/10)
+		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
+		require.NoError(t, err)
+	})
+
 	t.Run("if were errors in first M tasks, than finished not more N+M tasks", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
