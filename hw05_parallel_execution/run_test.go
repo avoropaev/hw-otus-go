@@ -40,7 +40,7 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, runTasksCount, int32(workersCount+0), "extra tasks were started")
 	})
 
-	t.Run("tasks without errors", func(t *testing.T) {
+	t.Run("tasks without errors (eventually)", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
 
