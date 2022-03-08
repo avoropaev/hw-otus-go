@@ -57,7 +57,7 @@ func TestRun(t *testing.T) {
 
 		require.Eventually(t, func() bool {
 			return runTasksCount == int32(tasksCount)
-		}, time.Millisecond/2, time.Millisecond/10)
+		}, time.Millisecond, time.Millisecond/10)
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.NoError(t, err)
 	})
