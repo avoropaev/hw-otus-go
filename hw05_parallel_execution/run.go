@@ -15,6 +15,10 @@ func Run(tasks []Task, n, m int) (returnErr error) {
 	tasksChan := make(chan Task)
 	var errorsCount int32
 
+	if len(tasks) < n {
+		n = len(tasks)
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(n)
 
