@@ -35,12 +35,12 @@ func Run(tasks []Task, n, m int) (returnErr error) {
 	}
 
 	for _, task := range tasks {
-		tasksChan <- task
-
 		if m > 0 && int(atomic.LoadInt32(&errorsCount)) >= m {
 			returnErr = ErrErrorsLimitExceeded
 			break
 		}
+
+		tasksChan <- task
 	}
 
 	close(tasksChan)
