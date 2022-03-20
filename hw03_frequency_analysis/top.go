@@ -29,10 +29,8 @@ func Top10(s string) []string {
 	}
 
 	sort.SliceStable(counterSlice, func(i, j int) bool {
-		elemI := &counterSlice[i]
-		elemJ := &counterSlice[j]
-
-		return elemI.Count > elemJ.Count || (elemI.Count == elemJ.Count && elemI.Word < elemJ.Word)
+		return counterSlice[i].Count > counterSlice[j].Count ||
+			(counterSlice[i].Count == counterSlice[j].Count && counterSlice[i].Word < counterSlice[j].Word)
 	})
 
 	resultCap := 10
