@@ -79,4 +79,14 @@ func TestTop10(t *testing.T) {
 			require.Equal(t, expected, Top10(text))
 		}
 	})
+
+	t.Run("one word", func(t *testing.T) {
+		require.Len(t, Top10("word"), 1)
+	})
+
+	t.Run("less than 10 words", func(t *testing.T) {
+		result := Top10("qq ww ee rr tt tt yy yy")
+
+		require.Equal(t, []string{"tt", "yy", "ee", "qq", "rr", "ww"}, result)
+	})
 }
