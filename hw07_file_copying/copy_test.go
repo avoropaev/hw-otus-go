@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
-	"github.com/stretchr/testify/require"
 	"io/fs"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCopy(t *testing.T) {

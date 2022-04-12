@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cheggaaa/pb/v3"
+	pb "github.com/cheggaaa/pb/v3"
 )
 
 var (
