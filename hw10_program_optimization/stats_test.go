@@ -5,6 +5,7 @@ package hw10programoptimization
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -56,5 +57,11 @@ func TestGetDomainStat(t *testing.T) {
 		result, err := GetDomainStat(bytes.NewBufferString(data), "")
 		require.ErrorIs(t, err, ErrDomainIsEmpty)
 		require.Nil(t, result)
+	})
+
+	t.Run("empty reader", func(t *testing.T) {
+		result, err := GetDomainStat(strings.NewReader(""), "qwerty")
+		require.NoError(t, err)
+		require.Empty(t, result)
 	})
 }
