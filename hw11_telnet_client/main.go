@@ -25,13 +25,14 @@ func main() {
 	address := net.JoinHostPort(args[0], args[1])
 
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
-	defer func() {
-		_ = client.Close()
-	}()
 
 	if err := client.Connect(); err != nil {
 		log.Fatalf("error while connect: %s", err)
 	}
+
+	defer func() {
+		_ = client.Close()
+	}()
 
 	_, _ = fmt.Fprintf(os.Stderr, "Connected to %s", address)
 
