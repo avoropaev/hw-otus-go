@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -62,4 +63,23 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+}
+
+func TestInvalidAddress(t *testing.T) {
+	c := NewTelnetClient("", time.Second, os.Stdin, os.Stdout)
+	require.Error(t, c.Connect())
+}
+
+func TestSendWithoutConnect(t *testing.T) {
+	c := NewTelnetClient("address:1234", time.Second, os.Stdin, os.Stdout)
+	err := c.Send()
+	require.Error(t, err)
+	require.Equal(t, "need to connect first", err.Error())
+}
+
+func TestReceiveWithoutConnect(t *testing.T) {
+	c := NewTelnetClient("address:1234", time.Second, os.Stdin, os.Stdout)
+	err := c.Receive()
+	require.Error(t, err)
+	require.Equal(t, "need to connect first", err.Error())
 }
