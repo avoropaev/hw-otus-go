@@ -1,1 +1,15 @@
-version: "3"
+version: "3.9"
+
+volumes:
+  db:
+
+services:
+  db:
+    image: library/postgres:13
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
