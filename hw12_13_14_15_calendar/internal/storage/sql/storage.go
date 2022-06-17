@@ -6,7 +6,7 @@ import (
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	pgx "github.com/jackc/pgx/v4"
 
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/app"
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/storage"
