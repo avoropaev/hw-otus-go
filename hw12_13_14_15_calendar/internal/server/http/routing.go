@@ -16,7 +16,7 @@ import (
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/server/pb"
 )
 
-// MakeRouter creates handler for http with all routes
+// MakeRouter creates handler for http with all routes.
 func MakeRouter(ctx context.Context, grpcEndpoint string, _ app.Application) (http.Handler, error) {
 	r := mux.NewRouter()
 	r.StrictSlash(true)
