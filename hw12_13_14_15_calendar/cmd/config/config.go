@@ -11,6 +11,7 @@ type Config struct {
 	Logger LoggerConf `yaml:"logger"`
 	DB     DBConf     `yaml:"db"`
 	HTTP   HTTPConf   `yaml:"http"`
+	GRPC   GRPCConf   `yaml:"grpc"`
 }
 
 type LoggerConf struct {
@@ -27,6 +28,11 @@ type PSQLConf struct {
 }
 
 type HTTPConf struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
+}
+
+type GRPCConf struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 }

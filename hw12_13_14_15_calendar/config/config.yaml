@@ -11,3 +11,7 @@ db:
 http:
   host: ""
   port: 8010
+
+grpc:
+  host: ""
+  port: 8020

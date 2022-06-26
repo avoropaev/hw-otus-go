@@ -2,6 +2,7 @@ package sqlstorage
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/georgysavva/scany/pgxscan"
@@ -82,7 +83,7 @@ func (s Storage) DeleteEvent(ctx context.Context, eventGUID uuid.UUID) error {
 
 func (s Storage) FindEventsByInterval(ctx context.Context, startDateTime, endDateTime time.Time) ([]*storage.Event, error) {
 	sql := `
-		SELECT *
+		SELECT guid, title, start_at, end_at, description, user_guid, notify_before
 		FROM events
 		WHERE start_at >= $1 AND end_at <= $2
 	`
@@ -98,18 +99,22 @@ func (s Storage) FindEventsByInterval(ctx context.Context, startDateTime, endDat
 }
 
 func (s Storage) FindEventByGUID(ctx context.Context, eventGUID uuid.UUID) (*storage.Event, error) {
-	sql := `
-		SELECT *
+	query := `
+		SELECT guid, title, start_at, end_at, description, user_guid, notify_before
 		FROM events
 		WHERE guid = $1
 	`
 
-	var event *storage.Event
+	var event storage.Event
 
-	err := pgxscan.Get(ctx, s.conn, &event, sql, eventGUID)
+	err := pgxscan.Get(ctx, s.conn, &event, query, eventGUID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
-	return event, nil
+	return &event, nil
 }
