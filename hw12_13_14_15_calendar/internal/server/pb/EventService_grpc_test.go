@@ -2,7 +2,6 @@ package pb_test
 
 import (
 	"context"
-	"log"
 	"net"
 	"testing"
 	"time"
@@ -43,7 +42,7 @@ func (suite *EventServiceGRPCSuite) SetupSuite() {
 	pb.RegisterEventServiceServer(s, service.NewEventService(app.New(memorystorage.New())))
 	go func() {
 		if err := s.Serve(lis); err != nil {
-			log.Fatalf("failed to serve, err: %v", err)
+			require.NoError(suite.T(), err)
 		}
 	}()
 
@@ -55,9 +54,7 @@ func (suite *EventServiceGRPCSuite) SetupSuite() {
 		grpc.WithContextDialer(bufDialer),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
-	if err != nil {
-		log.Fatalf("failed to DialContext, err: %v", err)
-	}
+	require.NoError(suite.T(), err)
 
 	suite.Server = s
 	suite.Conn = conn
@@ -66,7 +63,7 @@ func (suite *EventServiceGRPCSuite) SetupSuite() {
 
 func (suite *EventServiceGRPCSuite) TearDownSuite() {
 	if err := suite.Conn.Close(); err != nil {
-		log.Fatalf("unable to close connect, err: %v", err)
+		require.NoError(suite.T(), err)
 	}
 
 	suite.Server.GracefulStop()
