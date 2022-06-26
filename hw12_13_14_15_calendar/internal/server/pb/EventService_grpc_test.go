@@ -74,13 +74,15 @@ func (suite *EventServiceGRPCSuite) TearDownSuite() {
 
 func (suite *EventServiceGRPCSuite) SetupTest() {
 	events, err := suite.Client.GetEventsForMonth(context.Background(), &pb.GetEventsRequest{StartAt: &timestamppb.Timestamp{Seconds: 499}})
-	require.NoError(suite.T(), err)
-	require.NotNil(suite.T(), events)
+	if err != nil {
+		log.Fatalf("failer to get events, err: %v", err)
+	}
 
 	for _, event := range events.Events {
-		result, err := suite.Client.DeleteEvent(context.Background(), &pb.DeleteRequest{EventGuid: event.Guid})
-		require.NoError(suite.T(), err)
-		require.Nil(suite.T(), result.Error)
+		_, err := suite.Client.DeleteEvent(context.Background(), &pb.DeleteRequest{EventGuid: event.Guid})
+		if err != nil {
+			log.Fatalf("failted to delete event, err: %v", err)
+		}
 	}
 }
 
