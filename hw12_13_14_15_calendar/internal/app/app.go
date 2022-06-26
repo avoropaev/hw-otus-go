@@ -9,6 +9,15 @@ import (
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/storage"
 )
 
+type Application interface {
+	CreateEvent(ctx context.Context, event storage.Event) error
+	UpdateEvent(ctx context.Context, eventGUID uuid.UUID, event storage.Event) error
+	DeleteEvent(ctx context.Context, eventGUID uuid.UUID) error
+	GetEventForDay(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error)
+	GetEventForWeek(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error)
+	GetEventForMonth(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error)
+}
+
 type App struct {
 	storage Storage
 }
@@ -25,51 +34,26 @@ func New(storage Storage) *App {
 	return &App{storage}
 }
 
-func (a *App) TestDB(ctx context.Context) error {
-	notifyBefore := time.Hour
+func (a *App) CreateEvent(ctx context.Context, event storage.Event) error {
+	return a.storage.CreateEvent(ctx, event)
+}
 
-	eventGUID := uuid.New()
+func (a *App) UpdateEvent(ctx context.Context, eventGUID uuid.UUID, event storage.Event) error {
+	return a.storage.UpdateEvent(ctx, eventGUID, event)
+}
 
-	err := a.storage.CreateEvent(ctx, storage.Event{
-		GUID:         eventGUID,
-		Title:        "title",
-		StartAt:      time.Now(),
-		EndAt:        time.Now().Add(time.Hour * 5),
-		UserGUID:     uuid.MustParse("1d8fe576-d420-479b-b96f-30fd7e0107c1"),
-		NotifyBefore: &notifyBefore,
-	})
-	if err != nil {
-		return err
-	}
+func (a *App) DeleteEvent(ctx context.Context, eventGUID uuid.UUID) error {
+	return a.storage.DeleteEvent(ctx, eventGUID)
+}
 
-	err = a.storage.UpdateEvent(ctx, eventGUID, storage.Event{
-		Title:    "new title",
-		StartAt:  time.Now().Add(time.Hour * 5),
-		EndAt:    time.Now().Add(time.Hour * 10),
-		UserGUID: uuid.MustParse("1d8fe576-d420-479b-b96f-30fd7e0107c1"),
-	})
-	if err != nil {
-		return err
-	}
+func (a *App) GetEventForDay(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error) {
+	return a.storage.FindEventsByInterval(ctx, startDateTime, startDateTime.Add(time.Hour*24))
+}
 
-	events, err := a.storage.FindEventsByInterval(ctx, time.Now(), time.Now().Add(time.Hour*24))
-	if err != nil {
-		return err
-	}
+func (a *App) GetEventForWeek(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error) {
+	return a.storage.FindEventsByInterval(ctx, startDateTime, startDateTime.Add(time.Hour*24*7))
+}
 
-	_ = events
-
-	err = a.storage.DeleteEvent(ctx, eventGUID)
-	if err != nil {
-		return err
-	}
-
-	events, err = a.storage.FindEventsByInterval(ctx, time.Now(), time.Now().Add(time.Hour*24))
-	if err != nil {
-		return err
-	}
-
-	_ = events
-
-	return nil
+func (a *App) GetEventForMonth(ctx context.Context, startDateTime time.Time) ([]*storage.Event, error) {
+	return a.storage.FindEventsByInterval(ctx, startDateTime, startDateTime.Add(time.Hour*24*30))
 }

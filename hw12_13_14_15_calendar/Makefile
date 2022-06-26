@@ -16,7 +16,7 @@ build:
 run: build docker-compose-up migrate
 	$(BIN) serve-http --config ./config/config.yaml
 
-stop:
+down:
 	docker-compose -f $(DOCKER_COMPOSE_PATH) down
 
 build-img:
@@ -46,4 +46,23 @@ install-migrator:
 migrate: install-migrator
 	goose --dir ./migrations postgres "postgres://postgres:password@localhost:5435/postgres?sslmode=disable" up
 
-.PHONY: build run build-img run-img version test lint
+install-protoc:
+ifeq (, $(shell which protoc))
+ifeq ($(shell uname -s),Darwin)
+	brew install protobuf
+else
+	apt install -y protobuf-compiler
+endif
+endif
+	(which protoc-gen-go > /dev/null) || go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	(which protoc-gen-go-grpc > /dev/null) || go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+generate: install-protoc
+	protoc \
+	--proto_path=./api/ --go_out=./internal/server/pb --go-grpc_out=./internal/server/pb \
+	--grpc-gateway_out ./internal/server/pb --grpc-gateway_opt logtostderr=true,paths=import,generate_unbound_methods=true \
+	--openapiv2_out ./gen/openapiv2 --openapiv2_opt logtostderr=true,generate_unbound_methods=true \
+	api/*.proto
+	go generate ./...
+
+.PHONY: docker-compose-up build run down build-img run-img version test lint migrate generate
