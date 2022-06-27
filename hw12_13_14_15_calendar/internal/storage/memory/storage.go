@@ -87,7 +87,7 @@ func (s *Storage) FindEventsNeedsNotify(_ context.Context) (events []*storage.Ev
 	s.events.Range(func(key, value interface{}) bool {
 		event := value.(storage.Event)
 
-		if event.NotifyBefore == nil || event.Notified == true {
+		if event.NotifyBefore == nil || event.Notified {
 			return true
 		}
 

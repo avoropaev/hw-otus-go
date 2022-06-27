@@ -43,7 +43,7 @@ type Storage interface {
 	DeleteEventsOlderThan(ctx context.Context, datetime time.Time) (rowAffected int64, err error)
 }
 
-func New(storage Storage) *app {
+func New(storage Storage) Application {
 	return &app{
 		storage:  storage,
 		notifier: NewNotifier(),

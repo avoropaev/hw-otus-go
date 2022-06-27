@@ -40,12 +40,12 @@ type Worker func(context.Context, <-chan amqp.Delivery)
 func (c *Consumer) Handle(ctx context.Context, fn Worker, threads int) error {
 	var err error
 	if err = c.connect(); err != nil {
-		return fmt.Errorf("error: %v", err)
+		return fmt.Errorf("error: %w", err)
 	}
 
 	msgs, err := c.announceQueue()
 	if err != nil {
-		return fmt.Errorf("error: %v", err)
+		return fmt.Errorf("error: %w", err)
 	}
 
 	for {
@@ -58,7 +58,7 @@ func (c *Consumer) Handle(ctx context.Context, fn Worker, threads int) error {
 			if err != nil {
 				msgs, err = c.reConnect(ctx)
 				if err != nil {
-					return fmt.Errorf("reconnecting Error: %s", err)
+					return fmt.Errorf("reconnecting Error: %w", err)
 				}
 
 				log.Info().Msg("Reconnected... possibly")
@@ -74,18 +74,18 @@ func (c *Consumer) connect() error {
 
 	c.conn, err = amqp.Dial(c.uri)
 	if err != nil {
-		return fmt.Errorf("dial: %s", err)
+		return fmt.Errorf("dial: %w", err)
 	}
 
 	c.channel, err = c.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("channel: %s", err)
+		return fmt.Errorf("channel: %w", err)
 	}
 
 	go func() {
 		err := <-c.conn.NotifyClose(make(chan *amqp.Error))
 		if err != nil {
-			log.Error().Msgf("closing: %v", err)
+			log.Error().Msgf("closing: %w", err)
 		}
 
 		// Понимаем, что канал сообщений закрыт, надо пересоздать соединение.
@@ -101,7 +101,7 @@ func (c *Consumer) connect() error {
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("exchange declare: %s", err)
+		return fmt.Errorf("exchange declare: %w", err)
 	}
 
 	return nil
@@ -117,13 +117,13 @@ func (c *Consumer) announceQueue() (<-chan amqp.Delivery, error) {
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("queue Declare: %s", err)
+		return nil, fmt.Errorf("queue Declare: %w", err)
 	}
 
 	// Число сообщений, которые можно подтвердить за раз.
 	err = c.channel.Qos(50, 0, false)
 	if err != nil {
-		return nil, fmt.Errorf("error setting qos: %s", err)
+		return nil, fmt.Errorf("error setting qos: %w", err)
 	}
 
 	// Создаём биндинг (правило маршрутизации).
@@ -134,7 +134,7 @@ func (c *Consumer) announceQueue() (<-chan amqp.Delivery, error) {
 		false,
 		nil,
 	); err != nil {
-		return nil, fmt.Errorf("queue Bind: %s", err)
+		return nil, fmt.Errorf("queue Bind: %w", err)
 	}
 
 	msgs, err := c.channel.Consume(
@@ -147,7 +147,7 @@ func (c *Consumer) announceQueue() (<-chan amqp.Delivery, error) {
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("queue Consume: %s", err)
+		return nil, fmt.Errorf("queue Consume: %w", err)
 	}
 
 	return msgs, nil
@@ -166,10 +166,10 @@ func (c *Consumer) reConnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 			return nil, fmt.Errorf("stop reconnecting")
 		}
 
-		select {
-		case <-time.After(d):
+		for range time.After(d) {
 			if err := c.connect(); err != nil {
-				log.Printf("could not connect in reconnect call: %+v", err)
+				log.Error().Msgf("could not connect in reconnect call: %w", err)
+
 				continue
 			}
 

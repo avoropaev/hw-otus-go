@@ -50,12 +50,12 @@ func (c *Producer) Connect() error {
 
 	c.conn, err = amqp.Dial(c.uri)
 	if err != nil {
-		return fmt.Errorf("dial: %s", err)
+		return fmt.Errorf("dial: %w", err)
 	}
 
 	c.channel, err = c.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("channel: %s", err)
+		return fmt.Errorf("channel: %w", err)
 	}
 
 	return nil
