@@ -14,13 +14,6 @@ import (
 	memorystorage "github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
-type fixture struct {
-	Name    string
-	Start   time.Time
-	End     time.Time
-	MustGot bool
-}
-
 func TestStorage_Create_Update_Delete(t *testing.T) {
 	eventStorage := memorystorage.New()
 	ctx := context.Background()
@@ -91,7 +84,12 @@ func TestStorage_FindEventsByInterval(t *testing.T) {
 	ctx := context.Background()
 	expected := make([]*storage.Event, 0)
 
-	fixtures := []fixture{
+	fixtures := []struct {
+		Name    string
+		Start   time.Time
+		End     time.Time
+		MustGot bool
+	}{
 		{Name: "whole before interval", Start: iStart.Add(time.Hour * -5), End: iStart.Add(time.Hour * -3), MustGot: false},
 		{Name: "start before iStart and end in iStart", Start: iStart.Add(time.Hour * -2), End: iStart, MustGot: true},
 		{Name: "start before iStart and end in interval", Start: iStart.Add(time.Hour * -2), End: iStart.Add(time.Hour * 2), MustGot: true},
@@ -229,6 +227,118 @@ func TestStorage_Concurrency(t *testing.T) {
 	result, err = eventStorage.FindEventsByInterval(ctx, time.Now(), time.Now().Add(time.Hour*24))
 	require.NoError(t, err)
 	require.Empty(t, result)
+}
+
+func TestStorage_FindEventsNeedsNotify(t *testing.T) {
+	eventStorage := memorystorage.New()
+
+	ctx := context.Background()
+	expected := make([]*storage.Event, 0)
+
+	fixtures := []struct {
+		Name         string
+		Start        time.Time
+		End          time.Time
+		NotifyBefore time.Duration
+		Notified     bool
+		MustGot      bool
+	}{
+		{
+			Name:         "need notification",
+			Start:        time.Now().Add(time.Hour),
+			End:          time.Now().Add(time.Hour * 2),
+			NotifyBefore: time.Hour * 2,
+			MustGot:      true,
+		},
+		{
+			Name:         "need notification by time, but already notified",
+			Start:        time.Now().Add(time.Hour),
+			End:          time.Now().Add(time.Hour * 2),
+			NotifyBefore: time.Hour * 2,
+			Notified:     true,
+			MustGot:      false,
+		},
+		{
+			Name:         "need notification, but later",
+			Start:        time.Now().Add(time.Hour * 24),
+			End:          time.Now().Add(time.Hour * 26),
+			NotifyBefore: time.Hour * 2,
+			MustGot:      false,
+		},
+	}
+
+	for _, fixture := range fixtures {
+		event := storage.Event{
+			GUID:         uuid.New(),
+			Title:        fixture.Name,
+			StartAt:      fixture.Start,
+			EndAt:        fixture.End,
+			Notified:     fixture.Notified,
+			NotifyBefore: &fixture.NotifyBefore,
+		}
+
+		err := eventStorage.CreateEvent(ctx, event)
+		require.NoError(t, err)
+
+		if fixture.MustGot {
+			expected = append(expected, &event)
+		}
+	}
+
+	result, err := eventStorage.FindEventsNeedsNotify(ctx)
+	require.NoError(t, err)
+	equalSlices(t, expected, result)
+}
+
+func TestStorage_DeleteEventsOlderThan(t *testing.T) {
+	eventStorage := memorystorage.New()
+
+	ctx := context.Background()
+	expected := make([]*storage.Event, 0)
+
+	fixtures := []struct {
+		Name    string
+		Start   time.Time
+		End     time.Time
+		MustGot bool
+	}{
+		{
+			Name:    "deleted",
+			Start:   time.Now().Add(time.Hour * 24 * 35 * -1),
+			End:     time.Now().Add(time.Hour * 24 * 34 * -1),
+			MustGot: false,
+		},
+		{
+			Name:    "not deleted",
+			Start:   time.Now().Add(time.Hour),
+			End:     time.Now().Add(time.Hour * 2),
+			MustGot: true,
+		},
+	}
+
+	for _, fixture := range fixtures {
+		event := storage.Event{
+			GUID:    uuid.New(),
+			Title:   fixture.Name,
+			StartAt: fixture.Start,
+			EndAt:   fixture.End,
+		}
+
+		err := eventStorage.CreateEvent(ctx, event)
+		require.NoError(t, err)
+
+		if fixture.MustGot {
+			expected = append(expected, &event)
+		}
+	}
+
+	rowsAffected, err := eventStorage.DeleteEventsOlderThan(ctx, time.Now().Add(time.Hour*24*30*-1))
+	require.NoError(t, err)
+	require.Equal(t, int64(1), rowsAffected)
+
+	result, err := eventStorage.FindEventsByInterval(ctx, time.Now().Add(time.Hour*24*30*2*-1), time.Now().Add(time.Hour*24))
+	require.NoError(t, err)
+	equalSlices(t, expected, result)
 }
 
 func equalSlices(t *testing.T, expected, result []*storage.Event) {
