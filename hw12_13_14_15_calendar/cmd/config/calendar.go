@@ -7,24 +7,11 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-type Config struct {
+type CalendarConfig struct {
 	Logger LoggerConf `yaml:"logger"`
 	DB     DBConf     `yaml:"db"`
 	HTTP   HTTPConf   `yaml:"http"`
 	GRPC   GRPCConf   `yaml:"grpc"`
-}
-
-type LoggerConf struct {
-	Level string `yaml:"level"`
-}
-
-type DBConf struct {
-	Type string   `yaml:"type"`
-	PSQL PSQLConf `yaml:"psql"`
-}
-
-type PSQLConf struct {
-	URL string `yaml:"url"`
 }
 
 type HTTPConf struct {
@@ -37,16 +24,16 @@ type GRPCConf struct {
 	Port int    `yaml:"port"`
 }
 
-func NewConfig() *Config {
-	return &Config{
+func NewCalendarConfig() *CalendarConfig {
+	return &CalendarConfig{
 		Logger: LoggerConf{
 			Level: "info",
 		},
 	}
 }
 
-func ParseConfig(filePath string) (*Config, error) {
-	c := NewConfig()
+func ParseCalendarConfig(filePath string) (*CalendarConfig, error) {
+	c := NewCalendarConfig()
 
 	file, err := os.OpenFile(filePath, os.O_RDONLY, 0o644)
 	if err != nil {

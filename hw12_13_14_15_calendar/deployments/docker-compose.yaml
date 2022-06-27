@@ -2,6 +2,7 @@ version: "3.9"
 
 volumes:
   db:
+  rabbitmq:
 
 services:
   db:
@@ -20,3 +21,10 @@ services:
       - "8000:8080"
     environment:
       - API_URL=http://localhost:8010/swagger.json
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/

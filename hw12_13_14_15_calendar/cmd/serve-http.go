@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	pgx "github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -43,7 +43,7 @@ func serveHTTPCommandRunE(ctx context.Context) func(cmd *cobra.Command, args []s
 	return func(cmd *cobra.Command, args []string) (err error) {
 		configFile := cmd.Flag("config").Value.String()
 
-		cfg, err := config.ParseConfig(configFile)
+		cfg, err := config.ParseCalendarConfig(configFile)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to parse config")
 
@@ -74,15 +74,6 @@ func serveHTTPCommandRunE(ctx context.Context) func(cmd *cobra.Command, args []s
 		go func() {
 			<-ctx.Done()
 
-			log.Info().Msg("stopping an http server...")
-
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-			defer cancel()
-
-			if err := httpServer.Stop(ctx); err != nil {
-				log.Error().Err(err).Msg("failed to stop http server")
-			}
-
 			log.Info().Msg("stopping an grpc server...")
 
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*2)
@@ -90,6 +81,15 @@ func serveHTTPCommandRunE(ctx context.Context) func(cmd *cobra.Command, args []s
 
 			if err := grpcServer.Stop(ctx); err != nil {
 				log.Error().Err(err).Msg("failed to stop grpc server")
+			}
+
+			log.Info().Msg("stopping an http server...")
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+			defer cancel()
+
+			if err := httpServer.Stop(ctx); err != nil {
+				log.Error().Err(err).Msg("failed to stop http server")
 			}
 		}()
 
@@ -124,7 +124,7 @@ func getStore(ctx context.Context, dbType string, psqlURL string, done <-chan st
 
 	switch dbType {
 	case "psql":
-		conn, err := pgx.Connect(ctx, psqlURL)
+		conn, err := pgxpool.Connect(ctx, psqlURL)
 		if err != nil {
 			log.Error().Err(err).Msg("unable to connect to database")
 
@@ -134,10 +134,7 @@ func getStore(ctx context.Context, dbType string, psqlURL string, done <-chan st
 		go func() {
 			<-done
 
-			err := conn.Close(ctx)
-			if err != nil {
-				log.Error().Err(err).Msg("unable to close connect to database")
-			}
+			conn.Close()
 		}()
 
 		err = conn.Ping(ctx)

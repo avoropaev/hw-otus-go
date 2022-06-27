@@ -1,22 +1,31 @@
-BIN := "./bin/calendar"
+BIN_FILENAME := calendar_otus_hw
+BIN := "./bin/$(BIN_FILENAME)"
 DOCKER_IMG="calendar:develop"
 DOCKER_COMPOSE_PATH="./deployments/docker-compose.yaml"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-docker-compose-up:
+up:
 	docker-compose -f $(DOCKER_COMPOSE_PATH) up -d
-	while ! docker-compose -f ./deployments/docker-compose.yaml exec --user postgres db psql -c "select 'db ready!'"; do sleep 1; done;
+	while ! docker-compose -f ./deployments/docker-compose.yaml exec --user postgres db psql -c "select 'db ready!'" > /dev/null; do sleep 1; done;
+	while ! curl -f -s http://localhost:15672 > /dev/null; do sleep 1; done;
 
 build:
 	docker-compose -f $(DOCKER_COMPOSE_PATH) build
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" .
 
-run: build docker-compose-up migrate
-	$(BIN) serve-http --config ./config/config.yaml
+run: build up migrate
+	mkdir -p logs
+	nohup $(BIN) serve-http --config ./config/calendar_config.yaml 0<&- &> ./logs/calendar.log &
+	nohup $(BIN) sender --config ./config/sender_config.yaml 0<&- &> ./logs/sender.log &
+	nohup $(BIN) scheduler --config ./config/scheduler_config.yaml 0<&- &> ./logs/scheduler.log &
 
 down:
+	docker-compose -f $(DOCKER_COMPOSE_PATH) down
+
+stop:
+	killall $(BIN_FILENAME)
 	docker-compose -f $(DOCKER_COMPOSE_PATH) down
 
 build-img:
@@ -65,4 +74,4 @@ generate: install-protoc
 	api/*.proto
 	go generate ./...
 
-.PHONY: docker-compose-up build run down build-img run-img version test lint migrate generate
+.PHONY: up down build run stop build-img run-img version test lint migrate generate

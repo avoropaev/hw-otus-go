@@ -3,6 +3,7 @@ module github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar
 go 1.17
 
 require (
+	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/georgysavva/scany v1.0.0
 	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.3.0
@@ -13,6 +14,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/cobra v1.4.0
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/grpc v1.47.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0

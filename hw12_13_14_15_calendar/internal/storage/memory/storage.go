@@ -82,3 +82,44 @@ func (s *Storage) FindEventByGUID(_ context.Context, eventGUID uuid.UUID) (*stor
 
 	return nil, nil
 }
+
+func (s *Storage) FindEventsNeedsNotify(_ context.Context) (events []*storage.Event, err error) {
+	s.events.Range(func(key, value interface{}) bool {
+		event := value.(storage.Event)
+
+		if event.NotifyBefore == nil || event.Notified == true {
+			return true
+		}
+
+		notifyAt := event.StartAt.Add(*event.NotifyBefore * -1)
+		if notifyAt.After(time.Now()) {
+			return true
+		}
+
+		events = append(events, &event)
+
+		return true
+	})
+
+	return events, nil
+}
+
+func (s *Storage) DeleteEventsOlderThan(_ context.Context, datetime time.Time) (rowAffected int64, err error) {
+	eventsToDelete := make([]*storage.Event, 0)
+
+	s.events.Range(func(key, value interface{}) bool {
+		event := value.(storage.Event)
+
+		if datetime.After(event.StartAt) {
+			eventsToDelete = append(eventsToDelete, &event)
+		}
+
+		return true
+	})
+
+	for _, event := range eventsToDelete {
+		s.events.Delete(event.GUID)
+	}
+
+	return int64(len(eventsToDelete)), nil
+}
