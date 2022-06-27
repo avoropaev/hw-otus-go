@@ -85,7 +85,7 @@ func (c *Consumer) connect() error {
 	go func() {
 		err := <-c.conn.NotifyClose(make(chan *amqp.Error))
 		if err != nil {
-			log.Error().Msgf("closing: %w", err)
+			log.Error().Msgf("closing: %v", err)
 		}
 
 		// Понимаем, что канал сообщений закрыт, надо пересоздать соединение.
@@ -168,7 +168,7 @@ func (c *Consumer) reConnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 
 		for range time.After(d) {
 			if err := c.connect(); err != nil {
-				log.Error().Msgf("could not connect in reconnect call: %w", err)
+				log.Error().Msgf("could not connect in reconnect call: %v", err)
 
 				continue
 			}
