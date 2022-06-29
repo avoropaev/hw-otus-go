@@ -9,7 +9,7 @@ GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X ${MODULE_PATH}/cmd.release="develop" -X ${MODULE_PATH}/cmd.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X ${MODULE_PATH}/cmd.gitHash=$(GIT_HASH)
 
 up:
-	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up
+	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up --build
 
 down:
 	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) down --remove-orphans
