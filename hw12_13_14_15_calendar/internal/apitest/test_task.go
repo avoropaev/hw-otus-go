@@ -31,7 +31,6 @@ func (s *APISuite) TestCreateEvent() {
 	s.Require().NotNil(events)
 	s.Require().Len(events, 1)
 	s.Require().Equal(event, events[0])
-
 }
 
 func (s *APISuite) TestUpdateEvent() {
