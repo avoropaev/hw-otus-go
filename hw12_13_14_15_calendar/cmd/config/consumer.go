@@ -1,11 +1,11 @@
 package config
 
 type ConsumerConf struct {
-	ConsumerTag  string `yaml:"consumer_tag"`
-	URI          string `yaml:"uri"`
-	ExchangeName string `yaml:"exchange_name"`
-	ExchangeType string `yaml:"exchange_type"`
-	Queue        string `yaml:"queue"`
-	BindingKey   string `yaml:"binding_key"`
-	Threads      int    `yaml:"threads"`
+	ConsumerTag  string `mapstructure:"consumer_tag"`
+	URI          string `mapstructure:"uri"`
+	ExchangeName string `mapstructure:"exchange_name"`
+	ExchangeType string `mapstructure:"exchange_type"`
+	Queue        string `mapstructure:"queue"`
+	BindingKey   string `mapstructure:"binding_key"`
+	Threads      int    `mapstructure:"threads"`
 }

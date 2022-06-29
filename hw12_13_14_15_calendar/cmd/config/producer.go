@@ -1,6 +1,6 @@
 package config
 
 type ProducerConf struct {
-	URI   string `yaml:"uri"`
-	Queue string `yaml:"queue"`
+	URI   string `mapstructure:"uri"`
+	Queue string `mapstructure:"queue"`
 }

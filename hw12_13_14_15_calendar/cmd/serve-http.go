@@ -137,13 +137,6 @@ func getStore(ctx context.Context, dbType string, psqlURL string, done <-chan st
 			conn.Close()
 		}()
 
-		err = conn.Ping(ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("unable to connect to database")
-
-			return nil, err
-		}
-
 		store = psqlstorage.New(conn)
 	case "memory":
 		store = memorystorage.New()
