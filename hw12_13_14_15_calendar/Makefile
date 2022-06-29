@@ -3,9 +3,10 @@ BIN := "./bin/$(BIN_FILENAME)"
 DOCKER_IMG="calendar:develop"
 DOCKER_COMPOSE_PATH="./deployments/docker-compose.yaml"
 DOCKER_COMPOSE_PATH_MS="./deployments/docker-compose.ms.yaml"
+MODULE_PATH="github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
-LDFLAGS := -X github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/cmd.release="develop" -X github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/cmd.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/cmd.gitHash=$(GIT_HASH)
+LDFLAGS := -X ${MODULE_PATH}/cmd.release="develop" -X ${MODULE_PATH}/cmd.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X ${MODULE_PATH}/cmd.gitHash=$(GIT_HASH)
 
 up:
 	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up
