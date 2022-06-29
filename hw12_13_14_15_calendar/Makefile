@@ -9,7 +9,7 @@ GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X ${MODULE_PATH}/cmd.release="develop" -X ${MODULE_PATH}/cmd.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X ${MODULE_PATH}/cmd.gitHash=$(GIT_HASH)
 
 up:
-	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up
+	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up -d
 
 down:
 	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) down --remove-orphans
@@ -38,8 +38,10 @@ generate: install-protoc
 	protoc \
 	--proto_path=./api/ --go_out=./internal/server/pb --go-grpc_out=./internal/server/pb \
 	--grpc-gateway_out ./internal/server/pb --grpc-gateway_opt logtostderr=true,paths=import,generate_unbound_methods=true \
-	--openapiv2_out ./gen/openapiv2 --openapiv2_opt logtostderr=true,generate_unbound_methods=true \
+	--openapiv2_out ./api --openapiv2_opt logtostderr=true,generate_unbound_methods=true \
 	api/*.proto
+	docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli:v4.3.1 generate --package-name=openapicli -Dapis,models,supportingFiles=client.go -i /local/api/EventService.swagger.json -g go -o /local/gen/openapicli
+	docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli:v4.3.1 generate --package-name=openapicli -DsupportingFiles=configuration.go -i /local/api/EventService.swagger.json -g go -o /local/gen/openapicli
 	go generate ./...
 
 build-wo-docker-ms:
@@ -69,5 +71,11 @@ stop:
 
 version: build-wo-docker-ms
 	$(BIN) version
+
+integration-tests: up
+	go test -v ./... --tags integration; \
+	e=$$?; \
+	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) down --remove-orphans; \
+	exit $$e
 
 .PHONY: up down test lint generate build-wo-docker-ms up-wo-docker-ms migrate run stop version

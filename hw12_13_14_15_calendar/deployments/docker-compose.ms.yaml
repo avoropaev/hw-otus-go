@@ -5,7 +5,7 @@ services:
     build:
       context: ../.
       dockerfile: ./build/migrator.Dockerfile
-    command: ["waitforit", "-address=db:5432", "-timeout=60", "-retry=1000", "--", "goose", "--dir", "/migrations", "postgres", "${POSTGRES_URI}", "up"]
+    command: ["waitforit", "-address=db:5432", "-timeout=120", "-retry=1000", "--", "goose", "--dir", "/migrations", "postgres", "${POSTGRES_URI}", "up"]
     volumes:
       - ../migrations:/migrations
     env_file:
