@@ -1,18 +1,18 @@
 logger:
-  level: debug # trace|debug|info|warn|error|fatal|panic
+  level: ${SENDER_LOGGER_LEVEL} # trace|debug|info|warn|error|fatal|panic
 
 db:
-  type: psql # psql|memory
+  type: ${SENDER_DB_TYPE} # psql|memory
 
   #required if type = psql
   psql:
-    url: "postgres://postgres:password@localhost:5435/postgres" # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
+    url: ${POSTGRES_URI} # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
 
 consumer:
-  consumer_tag: sender
-  uri: amqp://guest:guest@localhost:5672
-  exchange_name: notifications
-  exchange_type: direct
-  queue: notifications
-  binding_key:
-  threads: 3
+  consumer_tag: ${SENDER_CONSUMER_TAG}
+  uri: ${AMQP_URI}
+  exchange_name: ${SENDER_CONSUMER_EXCHANGE_NAME}
+  exchange_type: ${SENDER_CONSUMER_EXCHANGE_TYPE}
+  queue: ${QUEUE}
+  binding_key: ${SENDER_CONSUMER_BINDING_KEY}
+  threads: ${SENDER_CONSUMER_THREADS}

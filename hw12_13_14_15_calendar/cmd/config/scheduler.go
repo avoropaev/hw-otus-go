@@ -1,16 +1,15 @@
 package config
 
 import (
-	"io/ioutil"
-	"os"
+	"github.com/spf13/viper"
 
-	yaml "gopkg.in/yaml.v3"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/pkg/viperenvreplacer"
 )
 
 type SchedulerConfig struct {
-	Logger   LoggerConf   `yaml:"logger"`
-	DB       DBConf       `yaml:"db"`
-	Producer ProducerConf `yaml:"producer"`
+	Logger   LoggerConf   `mapstructure:"logger"`
+	DB       DBConf       `mapstructure:"db"`
+	Producer ProducerConf `mapstructure:"producer"`
 }
 
 func NewSchedulerConfig() *SchedulerConfig {
@@ -24,17 +23,17 @@ func NewSchedulerConfig() *SchedulerConfig {
 func ParseSchedulerConfig(filePath string) (*SchedulerConfig, error) {
 	c := NewSchedulerConfig()
 
-	file, err := os.OpenFile(filePath, os.O_RDONLY, 0o644)
+	viper.SetConfigFile(filePath)
+
+	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+	viperenvreplacer.ViperReplaceEnvs()
 
-	if err := yaml.Unmarshal(data, c); err != nil {
+	err = viper.Unmarshal(&c)
+	if err != nil {
 		return nil, err
 	}
 

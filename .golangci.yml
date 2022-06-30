@@ -1,4 +1,6 @@
 run:
+  skip-dirs:
+    - gen
   tests: true
   build-tags:
     - bench

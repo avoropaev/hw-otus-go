@@ -1,10 +1,10 @@
 package config
 
 type DBConf struct {
-	Type string   `yaml:"type"`
-	PSQL PSQLConf `yaml:"psql"`
+	Type string   `mapstructure:"type"`
+	PSQL PSQLConf `mapstructure:"psql"`
 }
 
 type PSQLConf struct {
-	URL string `yaml:"url"`
+	URL string `mapstructure:"url"`
 }
