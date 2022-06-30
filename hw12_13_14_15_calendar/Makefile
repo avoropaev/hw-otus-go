@@ -8,6 +8,9 @@ MODULE_PATH="github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar"
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X ${MODULE_PATH}/cmd.release="develop" -X ${MODULE_PATH}/cmd.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X ${MODULE_PATH}/cmd.gitHash=$(GIT_HASH)
 
+build:
+	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) build
+
 up:
 	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) up -d
 
@@ -78,4 +81,4 @@ integration-tests: up
 	docker-compose --env-file .env -f $(DOCKER_COMPOSE_PATH) -f $(DOCKER_COMPOSE_PATH_MS) down --remove-orphans; \
 	exit $$e
 
-.PHONY: up down test lint generate build-wo-docker-ms up-wo-docker-ms migrate run stop version
+.PHONY: build up down test lint generate build-wo-docker-ms up-wo-docker-ms migrate run stop version

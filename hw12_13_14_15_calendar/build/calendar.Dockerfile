@@ -23,12 +23,16 @@ RUN CGO_ENABLED=0 go build \
 # На выходе тонкий образ
 FROM alpine:3.9
 
+WORKDIR "/opt/calendar"
+
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
 LABEL MAINTAINERS="awz.voropaev@gmail.com"
 
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
+
+COPY ./api "/opt/calendar/api"
 
 ENV WAITFORIT_VERSION="v2.4.1"
 ENV WAIT_FOR_IT_PATH "/usr/local/bin/waitforit"
