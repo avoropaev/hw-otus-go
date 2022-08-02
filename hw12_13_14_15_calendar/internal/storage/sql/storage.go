@@ -8,18 +8,19 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/app"
 	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 var _ app.Storage = (*Storage)(nil)
 
-func New(conn *pgx.Conn) *Storage {
+func New(conn *pgxpool.Pool) *Storage {
 	return &Storage{conn}
 }
 
@@ -57,10 +58,11 @@ func (s Storage) UpdateEvent(ctx context.Context, eventGUID uuid.UUID, e storage
 
 	sql := `
 		UPDATE events
-		SET title = $2, start_at = $3, end_at = $4, description = $5, user_guid = $6, notify_before = $7
+		SET title = $2, start_at = $3, end_at = $4, description = $5, user_guid = $6, notify_before = $7, notified = $8
 		WHERE guid = $1
 	`
-	_, err = s.conn.Exec(ctx, sql, eventGUID, e.Title, e.StartAt, e.EndAt, e.Description, e.UserGUID, e.NotifyBefore)
+
+	_, err = s.conn.Exec(ctx, sql, eventGUID, e.Title, e.StartAt, e.EndAt, e.Description, e.UserGUID, e.NotifyBefore, e.Notified)
 	if err != nil {
 		return err
 	}
@@ -83,7 +85,7 @@ func (s Storage) DeleteEvent(ctx context.Context, eventGUID uuid.UUID) error {
 
 func (s Storage) FindEventsByInterval(ctx context.Context, startDateTime, endDateTime time.Time) ([]*storage.Event, error) {
 	sql := `
-		SELECT guid, title, start_at, end_at, description, user_guid, notify_before
+		SELECT guid, title, start_at, end_at, description, user_guid, notify_before, notified
 		FROM events
 		WHERE start_at >= $1 AND end_at <= $2
 	`
@@ -100,7 +102,7 @@ func (s Storage) FindEventsByInterval(ctx context.Context, startDateTime, endDat
 
 func (s Storage) FindEventByGUID(ctx context.Context, eventGUID uuid.UUID) (*storage.Event, error) {
 	query := `
-		SELECT guid, title, start_at, end_at, description, user_guid, notify_before
+		SELECT guid, title, start_at, end_at, description, user_guid, notify_before, notified
 		FROM events
 		WHERE guid = $1
 	`
@@ -117,4 +119,35 @@ func (s Storage) FindEventByGUID(ctx context.Context, eventGUID uuid.UUID) (*sto
 	}
 
 	return &event, nil
+}
+
+func (s *Storage) FindEventsNeedsNotify(ctx context.Context) ([]*storage.Event, error) {
+	sql := `
+		SELECT guid, title, start_at, end_at, description, user_guid, notify_before, notified
+		FROM events
+		WHERE notified = false AND start_at - notify_before <= $1
+	`
+
+	var events []*storage.Event
+
+	err := pgxscan.Select(ctx, s.conn, &events, sql, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func (s *Storage) DeleteEventsOlderThan(ctx context.Context, datetime time.Time) (rowAffected int64, err error) {
+	sql := `
+		DELETE FROM events
+		WHERE start_at <= $1
+	`
+
+	commandTag, err := s.conn.Exec(ctx, sql, datetime)
+	if err != nil {
+		return 0, err
+	}
+
+	return commandTag.RowsAffected(), nil
 }

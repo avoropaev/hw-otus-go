@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  migrator:
+    build:
+      context: ../.
+      dockerfile: ./build/migrator.Dockerfile
+    command: ["waitforit", "-address=db:5432", "-timeout=120", "-retry=1000", "--", "goose", "--dir", "/migrations", "postgres", "${POSTGRES_URI}", "up"]
+    volumes:
+      - ../migrations:/migrations
+    env_file:
+      - ../.env
+    depends_on:
+      - db
+
+  calendar:
+    build:
+      context: ../.
+      dockerfile: ./build/calendar.Dockerfile
+    command: ["waitforit", "-address=db:5432", "-timeout=120", "-retry=1000", "--", "/opt/calendar/calendar-app", "serve-http", "--config", "/etc/calendar/config.yaml"]
+    ports:
+      - "${CALENDAR_HTTP_PORT}:${CALENDAR_HTTP_PORT}"
+      - "${CALENDAR_GRPC_PORT}:${CALENDAR_GRPC_PORT}"
+    env_file:
+      - ../.env
+    depends_on:
+      - db
+      - migrator
+
+  scheduler:
+    build:
+      context: ../.
+      dockerfile: ./build/scheduler.Dockerfile
+    command: ["waitforit", "-address=db:5432", "-timeout=120", "-retry=1000", "--", "waitforit", "-address=rabbitmq:15672", "-timeout=120", "-retry=1000", "--", "/opt/calendar/calendar-app", "scheduler", "--config", "/etc/calendar/scheduler_config.yaml"]
+    env_file:
+      - ../.env
+    depends_on:
+      - db
+      - rabbitmq
+      - migrator
+
+  sender:
+    build:
+      context: ../.
+      dockerfile: ./build/sender.Dockerfile
+    command: ["waitforit", "-address=rabbitmq:15672", "-timeout=120", "-retry=1000", "--", "/opt/calendar/calendar-app", "sender", "--config", "/etc/calendar/sender_config.yaml"]
+    env_file:
+      - ../.env
+    depends_on:
+      - rabbitmq

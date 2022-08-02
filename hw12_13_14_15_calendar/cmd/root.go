@@ -24,6 +24,8 @@ var (
 func Execute(ctx context.Context) {
 	rootCmd.AddCommand(serveHTTPCommand(ctx))
 	rootCmd.AddCommand(versionCommand())
+	rootCmd.AddCommand(schedulerCommand(ctx))
+	rootCmd.AddCommand(senderCommand(ctx))
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Error().Err(err).Send()
