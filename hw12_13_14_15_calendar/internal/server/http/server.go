@@ -2,30 +2,54 @@ package internalhttp
 
 import (
 	"context"
+	golog "log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/rs/zerolog/log"
+
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/app"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/server"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/pkg/zerologwriter"
 )
 
-type Server struct { // TODO
+type serv struct {
+	host         string
+	port         int
+	grpcEndpoint string
+	app          app.Application
+
+	server *http.Server
 }
 
-type Logger interface { // TODO
+var _ server.IServer = (*serv)(nil)
+
+func NewServer(host string, port int, grpcEndpoint string, app app.Application) server.IServer {
+	return &serv{host, port, grpcEndpoint, app, nil}
 }
 
-type Application interface { // TODO
+func (s *serv) Start(ctx context.Context) error {
+	handler, err := MakeRouter(ctx, s.grpcEndpoint, s.app)
+	if err != nil {
+		return err
+	}
+
+	s.server = &http.Server{
+		Addr:         s.host + ":" + strconv.Itoa(s.port),
+		Handler:      handler,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		ErrorLog:     golog.New(zerologwriter.ZerologWriter{Zerolog: log.Logger}, "", golog.LstdFlags),
+	}
+
+	return s.server.ListenAndServe()
 }
 
-func NewServer(logger Logger, app Application) *Server {
-	return &Server{}
-}
+func (s *serv) Stop(ctx context.Context) error {
+	if s.server == nil {
+		return nil
+	}
 
-func (s *Server) Start(ctx context.Context) error {
-	// TODO
-	<-ctx.Done()
-	return nil
+	return s.server.Shutdown(ctx)
 }
-
-func (s *Server) Stop(ctx context.Context) error {
-	// TODO
-	return nil
-}
-
-// TODO
