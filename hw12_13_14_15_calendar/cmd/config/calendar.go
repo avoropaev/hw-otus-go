@@ -1,27 +1,26 @@
 package config
 
 import (
-	"io/ioutil"
-	"os"
+	"github.com/spf13/viper"
 
-	yaml "gopkg.in/yaml.v3"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/pkg/viperenvreplacer"
 )
 
 type CalendarConfig struct {
-	Logger LoggerConf `yaml:"logger"`
-	DB     DBConf     `yaml:"db"`
-	HTTP   HTTPConf   `yaml:"http"`
-	GRPC   GRPCConf   `yaml:"grpc"`
+	Logger LoggerConf `mapstructure:"logger"`
+	DB     DBConf     `mapstructure:"db"`
+	HTTP   HTTPConf   `mapstructure:"http"`
+	GRPC   GRPCConf   `mapstructure:"grpc"`
 }
 
 type HTTPConf struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
 }
 
 type GRPCConf struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
 }
 
 func NewCalendarConfig() *CalendarConfig {
@@ -35,17 +34,17 @@ func NewCalendarConfig() *CalendarConfig {
 func ParseCalendarConfig(filePath string) (*CalendarConfig, error) {
 	c := NewCalendarConfig()
 
-	file, err := os.OpenFile(filePath, os.O_RDONLY, 0o644)
+	viper.SetConfigFile(filePath)
+
+	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+	viperenvreplacer.ViperReplaceEnvs()
 
-	if err := yaml.Unmarshal(data, c); err != nil {
+	err = viper.Unmarshal(&c)
+	if err != nil {
 		return nil, err
 	}
 

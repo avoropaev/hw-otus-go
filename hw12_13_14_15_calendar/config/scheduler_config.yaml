@@ -1,13 +1,13 @@
 logger:
-  level: debug # trace|debug|info|warn|error|fatal|panic
+  level: ${SCHEDULER_LOGGER_LEVEL} # trace|debug|info|warn|error|fatal|panic
 
 db:
-  type: psql # psql|memory
+  type: ${SCHEDULER_DB_TYPE} # psql|memory
 
   #required if type = psql
   psql:
-    url: "postgres://postgres:password@localhost:5435/postgres" # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
+    url: ${POSTGRES_URI} # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
 
 producer:
-  uri: amqp://guest:guest@localhost:5672
-  queue: notifications
+  uri: ${AMQP_URI}
+  queue: ${QUEUE}

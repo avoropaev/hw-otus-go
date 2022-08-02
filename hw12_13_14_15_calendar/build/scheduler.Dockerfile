@@ -18,7 +18,7 @@ COPY . ${CODE_DIR}
 ARG LDFLAGS
 RUN CGO_ENABLED=0 go build \
         -ldflags "$LDFLAGS" \
-        -o ${BIN_FILE} cmd/calendar/*
+        -o ${BIN_FILE} .
 
 # На выходе тонкий образ
 FROM alpine:3.9
@@ -30,7 +30,12 @@ LABEL MAINTAINERS="awz.voropaev@gmail.com"
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/calendar/config.yaml
-COPY ./config/config.yaml ${CONFIG_FILE}
+ENV WAITFORIT_VERSION="v2.4.1"
+ENV WAIT_FOR_IT_PATH "/usr/local/bin/waitforit"
+RUN wget -q -O $WAIT_FOR_IT_PATH https://github.com/maxcnunes/waitforit/releases/download/$WAITFORIT_VERSION/waitforit-linux_amd64 \
+    && chmod +x $WAIT_FOR_IT_PATH
 
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+ENV CONFIG_FILE /etc/calendar/scheduler_config.yaml
+COPY ../config/scheduler_config.yaml ${CONFIG_FILE}
+
+CMD ${BIN_FILE} scheduler -config ${CONFIG_FILE}

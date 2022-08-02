@@ -6,37 +6,38 @@ package mock
 
 import (
 	context "context"
+	reflect "reflect"
+	time "time"
+
 	storage "github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/storage"
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
-	reflect "reflect"
-	time "time"
 )
 
-// MockApplication is a mock of Application interface
+// MockApplication is a mock of Application interface.
 type MockApplication struct {
 	ctrl     *gomock.Controller
 	recorder *MockApplicationMockRecorder
 }
 
-// MockApplicationMockRecorder is the mock recorder for MockApplication
+// MockApplicationMockRecorder is the mock recorder for MockApplication.
 type MockApplicationMockRecorder struct {
 	mock *MockApplication
 }
 
-// NewMockApplication creates a new mock instance
+// NewMockApplication creates a new mock instance.
 func NewMockApplication(ctrl *gomock.Controller) *MockApplication {
 	mock := &MockApplication{ctrl: ctrl}
 	mock.recorder = &MockApplicationMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockApplication) EXPECT() *MockApplicationMockRecorder {
 	return m.recorder
 }
 
-// CreateEvent mocks base method
+// CreateEvent mocks base method.
 func (m *MockApplication) CreateEvent(arg0 context.Context, arg1 storage.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateEvent", arg0, arg1)
@@ -44,13 +45,13 @@ func (m *MockApplication) CreateEvent(arg0 context.Context, arg1 storage.Event) 
 	return ret0
 }
 
-// CreateEvent indicates an expected call of CreateEvent
+// CreateEvent indicates an expected call of CreateEvent.
 func (mr *MockApplicationMockRecorder) CreateEvent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEvent", reflect.TypeOf((*MockApplication)(nil).CreateEvent), arg0, arg1)
 }
 
-// DeleteEvent mocks base method
+// DeleteEvent mocks base method.
 func (m *MockApplication) DeleteEvent(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteEvent", arg0, arg1)
@@ -58,13 +59,13 @@ func (m *MockApplication) DeleteEvent(arg0 context.Context, arg1 uuid.UUID) erro
 	return ret0
 }
 
-// DeleteEvent indicates an expected call of DeleteEvent
+// DeleteEvent indicates an expected call of DeleteEvent.
 func (mr *MockApplicationMockRecorder) DeleteEvent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEvent", reflect.TypeOf((*MockApplication)(nil).DeleteEvent), arg0, arg1)
 }
 
-// GetEventForDay mocks base method
+// GetEventForDay mocks base method.
 func (m *MockApplication) GetEventForDay(arg0 context.Context, arg1 time.Time) ([]*storage.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventForDay", arg0, arg1)
@@ -73,13 +74,13 @@ func (m *MockApplication) GetEventForDay(arg0 context.Context, arg1 time.Time) (
 	return ret0, ret1
 }
 
-// GetEventForDay indicates an expected call of GetEventForDay
+// GetEventForDay indicates an expected call of GetEventForDay.
 func (mr *MockApplicationMockRecorder) GetEventForDay(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventForDay", reflect.TypeOf((*MockApplication)(nil).GetEventForDay), arg0, arg1)
 }
 
-// GetEventForMonth mocks base method
+// GetEventForMonth mocks base method.
 func (m *MockApplication) GetEventForMonth(arg0 context.Context, arg1 time.Time) ([]*storage.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventForMonth", arg0, arg1)
@@ -88,13 +89,28 @@ func (m *MockApplication) GetEventForMonth(arg0 context.Context, arg1 time.Time)
 	return ret0, ret1
 }
 
-// GetEventForMonth indicates an expected call of GetEventForMonth
+// GetEventForMonth indicates an expected call of GetEventForMonth.
 func (mr *MockApplicationMockRecorder) GetEventForMonth(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventForMonth", reflect.TypeOf((*MockApplication)(nil).GetEventForMonth), arg0, arg1)
 }
 
-// GetEventForWeek mocks base method
+// GetEventForNotify mocks base method.
+func (m *MockApplication) GetEventForNotify(arg0 context.Context) ([]*storage.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEventForNotify", arg0)
+	ret0, _ := ret[0].([]*storage.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEventForNotify indicates an expected call of GetEventForNotify.
+func (mr *MockApplicationMockRecorder) GetEventForNotify(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventForNotify", reflect.TypeOf((*MockApplication)(nil).GetEventForNotify), arg0)
+}
+
+// GetEventForWeek mocks base method.
 func (m *MockApplication) GetEventForWeek(arg0 context.Context, arg1 time.Time) ([]*storage.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventForWeek", arg0, arg1)
@@ -103,13 +119,42 @@ func (m *MockApplication) GetEventForWeek(arg0 context.Context, arg1 time.Time) 
 	return ret0, ret1
 }
 
-// GetEventForWeek indicates an expected call of GetEventForWeek
+// GetEventForWeek indicates an expected call of GetEventForWeek.
 func (mr *MockApplicationMockRecorder) GetEventForWeek(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventForWeek", reflect.TypeOf((*MockApplication)(nil).GetEventForWeek), arg0, arg1)
 }
 
-// UpdateEvent mocks base method
+// RemoveOldEvents mocks base method.
+func (m *MockApplication) RemoveOldEvents(arg0 context.Context) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveOldEvents", arg0)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveOldEvents indicates an expected call of RemoveOldEvents.
+func (mr *MockApplicationMockRecorder) RemoveOldEvents(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOldEvents", reflect.TypeOf((*MockApplication)(nil).RemoveOldEvents), arg0)
+}
+
+// SendNotificationAndMarkAsNotifier mocks base method.
+func (m *MockApplication) SendNotificationAndMarkAsNotifier(arg0 context.Context, arg1 uuid.UUID, arg2 string, arg3 time.Time, arg4 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendNotificationAndMarkAsNotifier", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendNotificationAndMarkAsNotifier indicates an expected call of SendNotificationAndMarkAsNotifier.
+func (mr *MockApplicationMockRecorder) SendNotificationAndMarkAsNotifier(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendNotificationAndMarkAsNotifier", reflect.TypeOf((*MockApplication)(nil).SendNotificationAndMarkAsNotifier), arg0, arg1, arg2, arg3, arg4)
+}
+
+// UpdateEvent mocks base method.
 func (m *MockApplication) UpdateEvent(arg0 context.Context, arg1 uuid.UUID, arg2 storage.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateEvent", arg0, arg1, arg2)
@@ -117,7 +162,7 @@ func (m *MockApplication) UpdateEvent(arg0 context.Context, arg1 uuid.UUID, arg2
 	return ret0
 }
 
-// UpdateEvent indicates an expected call of UpdateEvent
+// UpdateEvent indicates an expected call of UpdateEvent.
 func (mr *MockApplicationMockRecorder) UpdateEvent(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEvent", reflect.TypeOf((*MockApplication)(nil).UpdateEvent), arg0, arg1, arg2)

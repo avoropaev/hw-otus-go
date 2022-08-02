@@ -35,7 +35,7 @@ func MakeRouter(ctx context.Context, grpcEndpoint string, _ app.Application) (ht
 	r.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		http.ServeFile(w, r, "gen/openapiv2/EventService.swagger.json")
+		http.ServeFile(w, r, "api/EventService.swagger.json")
 	})
 
 	apiHandler := runtime.NewServeMux()
