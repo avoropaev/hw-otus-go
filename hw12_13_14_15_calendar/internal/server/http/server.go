@@ -7,49 +7,46 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/app"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/internal/server"
+	"github.com/avoropaev/hw-otus-go/hw12_13_14_15_calendar/pkg/zerologwriter"
 )
 
-type zerologWriter struct {
-	zerolog zerolog.Logger
-}
-
-func (zlw zerologWriter) Write(p []byte) (n int, err error) {
-	zlw.zerolog.Error().Msg(string(p))
-
-	return len(p), nil
-}
-
-type Server struct {
-	host string
-	port int
-	app  Application
+type serv struct {
+	host         string
+	port         int
+	grpcEndpoint string
+	app          app.Application
 
 	server *http.Server
 }
 
-type Application interface {
-	TestDB(ctx context.Context) error
+var _ server.IServer = (*serv)(nil)
+
+func NewServer(host string, port int, grpcEndpoint string, app app.Application) server.IServer {
+	return &serv{host, port, grpcEndpoint, app, nil}
 }
 
-func NewServer(host string, port int, app Application) *Server {
-	return &Server{host, port, app, nil}
-}
+func (s *serv) Start(ctx context.Context) error {
+	handler, err := MakeRouter(ctx, s.grpcEndpoint, s.app)
+	if err != nil {
+		return err
+	}
 
-func (s *Server) Start() error {
 	s.server = &http.Server{
 		Addr:         s.host + ":" + strconv.Itoa(s.port),
-		Handler:      MakeRouter(s.app),
+		Handler:      handler,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
-		ErrorLog:     golog.New(zerologWriter{log.Logger}, "", golog.LstdFlags),
+		ErrorLog:     golog.New(zerologwriter.ZerologWriter{Zerolog: log.Logger}, "", golog.LstdFlags),
 	}
 
 	return s.server.ListenAndServe()
 }
 
-func (s *Server) Stop(ctx context.Context) error {
+func (s *serv) Stop(ctx context.Context) error {
 	if s.server == nil {
 		return nil
 	}

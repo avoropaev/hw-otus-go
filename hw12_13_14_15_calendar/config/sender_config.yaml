@@ -1,0 +1,18 @@
+logger:
+  level: ${SENDER_LOGGER_LEVEL} # trace|debug|info|warn|error|fatal|panic
+
+db:
+  type: ${SENDER_DB_TYPE} # psql|memory
+
+  #required if type = psql
+  psql:
+    url: ${POSTGRES_URI} # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
+
+consumer:
+  consumer_tag: ${SENDER_CONSUMER_TAG}
+  uri: ${AMQP_URI}
+  exchange_name: ${SENDER_CONSUMER_EXCHANGE_NAME}
+  exchange_type: ${SENDER_CONSUMER_EXCHANGE_TYPE}
+  queue: ${QUEUE}
+  binding_key: ${SENDER_CONSUMER_BINDING_KEY}
+  threads: ${SENDER_CONSUMER_THREADS}

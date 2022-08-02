@@ -1,0 +1,17 @@
+logger:
+  level: ${CALENDAR_LOGGER_LEVEL} # trace|debug|info|warn|error|fatal|panic
+
+db:
+  type: ${CALENDAR_DB_TYPE} # psql|memory
+
+  #required if type = psql
+  psql:
+    url: ${POSTGRES_URI} # Example: postgres://{user}:{password}@{hostname}:{port}/{database-name}
+
+http:
+  host: ${CALENDAR_HTTP_HOST}
+  port: ${CALENDAR_HTTP_PORT}
+
+grpc:
+  host: ${CALENDAR_GRPC_HOST}
+  port: ${CALENDAR_GRPC_PORT}

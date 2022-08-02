@@ -1,4 +1,6 @@
 run:
+  skip-dirs:
+    - gen
   tests: true
   build-tags:
     - bench
@@ -12,6 +14,11 @@ linters-settings:
     period: false
   lll:
     line-length: 140
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+        yaml: snake
 
 issues:
   exclude-rules:
